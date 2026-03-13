@@ -4,9 +4,16 @@ const jwt = require("jsonwebtoken");
 
 // REGISTER
 exports.register = async (req, res) => {
+
   try {
 
     const { name, email, password } = req.body;
+
+    if(password.length < 6){
+      return res.status(400).json({
+        message: "Password must be at least 6 characters"
+      });
+    }
 
     const userExists = await User.findOne({ email });
 
@@ -22,7 +29,7 @@ exports.register = async (req, res) => {
       password: hashedPassword
     });
 
-    user.password = undefined; // 🔥 hide password
+    user.password = undefined;
 
     res.status(201).json({
       message: "User registered successfully",
@@ -30,13 +37,16 @@ exports.register = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({ message: "Server error" });
+
   }
 };
 
 
 // LOGIN
 exports.login = async (req, res) => {
+
   try {
 
     const { email, password } = req.body;
@@ -56,13 +66,13 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user._id,
-        role: user.role   // 🔥 useful for CRM
+        role: user.role
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    user.password = undefined; // 🔥 hide password
+    user.password = undefined;
 
     res.json({
       message: "Login successful",
@@ -71,6 +81,8 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({ message: "Server error" });
+
   }
 };
